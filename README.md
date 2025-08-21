@@ -186,6 +186,23 @@ response = requests.post(
 )
 ```
 
+### Manual AI Validation
+
+```python
+# Get response first
+response = requests.get(url)
+
+# Then validate manually
+validation_result = response.validate_with_ai(
+    schema=Model,
+    rules=["Custom rules"],
+    expected_success=True
+)
+
+# Print detailed feedback (optional)
+response.print_validation_details()
+```
+
 ## 📊 Integration with Existing Code
 
 ### Minimal Changes Required

@@ -533,27 +533,27 @@ class AIResponse:
         import json
         
         print("\n" + "="*60)
-        print("🤖 ДЕТАЛЬНЫЙ AI ФИДБЕК")
+        print("🤖 DETAILED AI FEEDBACK")
         print("="*60)
         
-        # Основной результат
+        # Main result
         result_emoji = {
             "success": "✅",
             "failed": "❌", 
             "error": "🚨"
         }.get(validation.result.value, "❓")
         
-        print(f"{result_emoji} РЕЗУЛЬТАТ: {validation.result.value.upper()}")
-        print(f"💬 СООБЩЕНИЕ: {validation.message}")
+        print(f"{result_emoji} RESULT: {validation.result.value.upper()}")
+        print(f"💬 MESSAGE: {validation.message}")
         
         if validation.provider:
-            print(f"🔧 ПРОВАЙДЕР: {validation.provider}")
+            print(f"🔧 PROVIDER: {validation.provider}")
         if validation.model:
-            print(f"🧠 МОДЕЛЬ: {validation.model}")
+            print(f"🧠 MODEL: {validation.model}")
         
-        # Детальная разбивка
+        # Detailed breakdown
         if validation.details:
-            print(f"\n📊 ДЕТАЛЬНАЯ РАЗБИВКА:")
+            print(f"\n📊 DETAILED BREAKDOWN:")
             
             detail_emojis = {
                 "passed": "✅",
