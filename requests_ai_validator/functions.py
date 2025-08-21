@@ -98,7 +98,25 @@ def _should_recreate_session() -> bool:
 
 
 # Функции уровня модуля с встроенной AI валидацией
-def get(url, ai_validation=False, ai_schema=None, ai_rules=None, ai_expected_success=None, **kwargs) -> AIResponse:
+def get(
+    url: str,
+    ai_validation: bool = False,
+    ai_schema: Optional[Any] = None,
+    ai_rules: Optional[List[str]] = None,
+    ai_expected_success: Optional[bool] = None,
+    # Standard requests.get parameters
+    params: Optional[Dict[str, Any]] = None,
+    headers: Optional[Dict[str, str]] = None,
+    cookies: Optional[Dict[str, str]] = None,
+    auth: Optional[Any] = None,
+    timeout: Optional[float] = None,
+    allow_redirects: bool = True,
+    proxies: Optional[Dict[str, str]] = None,
+    verify: Optional[bool] = None,
+    stream: bool = False,
+    cert: Optional[str] = None,
+    **kwargs
+) -> AIResponse:
     """
     GET запрос с встроенной AI валидацией
     
@@ -110,12 +128,48 @@ def get(url, ai_validation=False, ai_schema=None, ai_rules=None, ai_expected_suc
         ai_expected_success: Ожидаемый результат (True=позитивный, False=негативный)
         **kwargs: Стандартные параметры requests.get()
     """
-    return get_global_session().request('GET', url, ai_validation=ai_validation, 
-                                       ai_schema=ai_schema, ai_rules=ai_rules, 
-                                       ai_expected_success=ai_expected_success, **kwargs)
+    return get_global_session().request(
+        'GET', url, 
+        ai_validation=ai_validation, 
+        ai_schema=ai_schema, 
+        ai_rules=ai_rules, 
+        ai_expected_success=ai_expected_success,
+        params=params,
+        headers=headers,
+        cookies=cookies,
+        auth=auth,
+        timeout=timeout,
+        allow_redirects=allow_redirects,
+        proxies=proxies,
+        verify=verify,
+        stream=stream,
+        cert=cert,
+        **kwargs
+    )
 
 
-def post(url, data=None, json=None, ai_validation=False, ai_schema=None, ai_rules=None, ai_expected_success=None, **kwargs) -> AIResponse:
+def post(
+    url: str,
+    data: Optional[Any] = None,
+    json: Optional[Any] = None,
+    ai_validation: bool = False,
+    ai_schema: Optional[Any] = None,
+    ai_rules: Optional[List[str]] = None,
+    ai_expected_success: Optional[bool] = None,
+    # Standard requests.post parameters
+    params: Optional[Dict[str, Any]] = None,
+    headers: Optional[Dict[str, str]] = None,
+    cookies: Optional[Dict[str, str]] = None,
+    files: Optional[Dict[str, Any]] = None,
+    auth: Optional[Any] = None,
+    timeout: Optional[float] = None,
+    allow_redirects: bool = True,
+    proxies: Optional[Dict[str, str]] = None,
+    verify: Optional[bool] = None,
+    stream: bool = False,
+    cert: Optional[str] = None,
+    **kwargs
+) -> AIResponse:
     """
     POST запрос с встроенной AI валидацией
     
@@ -129,9 +183,27 @@ def post(url, data=None, json=None, ai_validation=False, ai_schema=None, ai_rule
         ai_expected_success: Ожидаемый результат (True=позитивный, False=негативный)
         **kwargs: Стандартные параметры requests.post()
     """
-    return get_global_session().request('POST', url, data=data, json=json, 
-                                       ai_validation=ai_validation, ai_schema=ai_schema, 
-                                       ai_rules=ai_rules, ai_expected_success=ai_expected_success, **kwargs)
+    return get_global_session().request(
+        'POST', url,
+        data=data,
+        json=json,
+        ai_validation=ai_validation,
+        ai_schema=ai_schema,
+        ai_rules=ai_rules,
+        ai_expected_success=ai_expected_success,
+        params=params,
+        headers=headers,
+        cookies=cookies,
+        files=files,
+        auth=auth,
+        timeout=timeout,
+        allow_redirects=allow_redirects,
+        proxies=proxies,
+        verify=verify,
+        stream=stream,
+        cert=cert,
+        **kwargs
+    )
 
 
 def put(url, data=None, json=None, ai_validation=False, ai_schema=None, ai_rules=None, ai_expected_success=None, **kwargs) -> AIResponse:
