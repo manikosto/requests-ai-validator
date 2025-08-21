@@ -410,7 +410,7 @@ class AIResponse:
         if not ALLURE_AVAILABLE:
             return
         
-        # 1. AI Raw Response - сырой ответ от AI
+        # 1. AI Raw Response - raw AI output
         if report.raw_ai_response:
             allure.attach(
                 report.raw_ai_response,
@@ -501,7 +501,7 @@ class AIResponse:
         
         # Правила
         if report.rules_used:
-            lines.append("\n📋 ИСПОЛЬЗОВАННЫЕ ПРАВИЛА:")
+            lines.append("\n📋 VALIDATION RULES:")
             for i, rule in enumerate(report.rules_used, 1):
                 lines.append(f"   {i}. {rule}")
         
@@ -613,17 +613,17 @@ class AIResponse:
         
         # Используемые правила
         if validation.rules_used:
-            print(f"\n📋 ИСПОЛЬЗОВАННЫЕ ПРАВИЛА:")
+            print(f"\n📋 VALIDATION RULES:")
             for i, rule in enumerate(validation.rules_used, 1):
                 print(f"   {i}. {rule}")
         
-        # Схема
+        # Schema
         if validation.schema_used:
-            print(f"\n📄 СХЕМА: {validation.schema_used}")
+            print(f"\n📄 SCHEMA: {validation.schema_used}")
         
-        # Сырой ответ AI (если не слишком длинный)
+        # Raw AI response (if not too long)
         if validation.raw_ai_response and len(validation.raw_ai_response) < 1000:
-            print(f"\n🔍 СЫРОЙ ОТВЕТ AI:")
+            print(f"\n🔍 RAW AI RESPONSE:")
             try:
                 raw_json = json.loads(validation.raw_ai_response)
                 print(json.dumps(raw_json, indent=2, ensure_ascii=False))
