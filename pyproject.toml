@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "requests-ai-validator"
+version = "1.0.0"
+description = "AI-powered validation wrapper for Python requests library"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Aleksei Koledachkin", email = "akoledachkin@gmail.com"}
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Testing",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+keywords = ["requests", "api", "testing", "validation", "ai", "http", "automation"]
+requires-python = ">=3.8"
+dependencies = [
+    "requests>=2.25.0",
+    "typing-extensions>=4.0.0",
+]
+
+[project.optional-dependencies]
+openai = ["openai>=1.0.0"]
+anthropic = ["anthropic>=0.25.0"]
+pydantic = ["pydantic>=2.0.0"]
+jsonschema = ["jsonschema>=4.0.0"]
+yaml = ["PyYAML>=6.0"]
+allure = ["allure-pytest>=2.12.0"]
+all = [
+    "openai>=1.0.0",
+    "anthropic>=0.25.0",
+    "pydantic>=2.0.0",
+    "jsonschema>=4.0.0",
+    "PyYAML>=6.0",
+    "allure-pytest>=2.12.0",
+]
+dev = [
+    "pytest>=7.0.0",
+    "black>=22.0.0",
+    "flake8>=4.0.0",
+    "mypy>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/requests-ai-validator"
+"Bug Reports" = "https://github.com/yourusername/requests-ai-validator/issues"
+Source = "https://github.com/yourusername/requests-ai-validator"
+
+[tool.setuptools.packages.find]
+include = ["requests_ai_validator*"]

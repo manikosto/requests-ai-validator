@@ -1,0 +1,18 @@
+# Зависимости для REST AI Validator
+
+# HTTP клиент
+requests>=2.25.0
+
+# AI провайдеры (опционально)
+openai>=1.0.0          # для GPT
+anthropic>=0.25.0      # для Claude
+
+# Конфигурация
+python-dotenv>=0.19.0  # для .env файлов
+
+# Тестирование
+pytest>=7.0.0
+allure-pytest>=2.12.0  # для Allure отчетов
+
+# Базовые зависимости Python
+typing-extensions>=4.0.0
