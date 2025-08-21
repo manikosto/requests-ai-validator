@@ -26,7 +26,7 @@ setup(
     description="AI-powered validation wrapper for Python requests library",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/requests-ai-validator",
+    url="https://github.com/manikosto/requests-ai-validator",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 4 - Beta",

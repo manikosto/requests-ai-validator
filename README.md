@@ -238,9 +238,9 @@ Works seamlessly with popular testing frameworks:
 
 ## 🔗 Links
 
-- **GitHub**: [Source code](https://github.com/your-username/requests-ai-validator)
+- **GitHub**: [Source code](https://github.com/manikosto/requests-ai-validator)
 - **PyPI**: [Package](https://pypi.org/project/requests-ai-validator/)
-- **Issues**: [Report bugs](https://github.com/your-username/requests-ai-validator/issues)
+- **Issues**: [Report bugs](https://github.com/manikosto/requests-ai-validator/issues)
 - **Examples**: See `project/` directory for integration examples
 
 ## 📄 License
