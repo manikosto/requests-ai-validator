@@ -152,39 +152,32 @@ Your task is to validate the following aspects of the REST API interaction:
     ```json
     {
       "result": "success" | "failed" | "error",
-      "message": "<concise human-readable summary in Russian>",
-      "details": {
-        "http_compliance": "<specific finding description in Russian>",
-        "request_validation": "<specific finding description in Russian>", 
-        "response_structure": "<specific finding description in Russian>",
-        "schema_compliance": "<specific finding description in Russian>",
-        "data_consistency": "<specific finding description in Russian>",
-
-      }
+      "message": "<concise summary>",
+      "reason": "<specific reason for failure, only if result is failed>"
     }
     ```
+    
+    **For SUCCESS**: Only include result and message
+    **For FAILED**: Include specific reason with concrete issues
+    **Examples of good reasons**:
+    - "Schema compliance failed: missing required fields 'nickname', 'avatar_url' in response"
+    - "Data consistency failed: field 'email' mismatch between request and response"
+    - "HTTP compliance failed: status code 422 instead of expected 201 for POST"
 
-**CRITICAL REQUIREMENTS FOR DETAILS FORMAT**:
-- Each category MUST be a simple string (not objects or arrays)
-- For SUCCESSFUL validations: describe what was checked and confirmed
-- For FAILED validations: describe the specific problem found  
-- For SKIPPED validations: explain why not applicable
-- **FOR REQUEST_VALIDATION**: Only validate actual payload data, never invent missing fields
-- **FOR DATA_CONSISTENCY**: Only compare fields present in both request and response
-- Be specific about field names, values, and expectations
-
-**CRITICAL JSON REQUIREMENTS**:
+**CRITICAL REQUIREMENTS**:
 - Never include explanations, Markdown, code blocks, or any text outside the JSON object
-- Always respond in valid JSON format
-- Be thorough but practical - focus on real issues that affect API functionality
+- Always respond in valid JSON format and English language
+- Be specific about field names and concrete issues
+- For successful validations: simple success message
+- For failed validations: specific reason with exact problem details
 
-**MANDATORY LANGUAGE REQUIREMENT**:
-- RESPOND ONLY IN ENGLISH
-- ALL text must be in English language
-- NEVER use Russian words like "Ошибка", "валидация", "запрос", "ответ", "проверка", "успешно"
-- Example good English responses: "Validation successful", "Request valid", "Schema compliant"
-- Example bad Russian responses: "Все проверки пройдены успешно", "Ошибка валидации"
-- IF YOU RESPOND IN RUSSIAN, THE VALIDATION WILL FAIL"""
+**REASON FORMAT EXAMPLES**:
+- "Schema compliance failed: missing required fields 'nickname', 'avatar_url' in response"
+- "Data consistency failed: field 'email' value 'test@test.com' in request but 'user@example.com' in response"  
+- "HTTP compliance failed: status code 422 instead of expected 201 for POST operation"
+- "Request validation failed: invalid data type for field 'age' - expected integer but got string"
+
+**LANGUAGE REQUIREMENT**: RESPOND ONLY IN ENGLISH"""
         
         # Prepare schema information
         schema_info = ""

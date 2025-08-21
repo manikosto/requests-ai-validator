@@ -201,10 +201,18 @@ class AIResponse:
             else:
                 result_enum = ValidationResult.ERROR
                 
+            # Handle new format with reason or old format with details
+            details = validation_result.get("details")
+            reason = validation_result.get("reason")
+            
+            # If reason exists, use it as main details
+            if reason:
+                details = {"reason": reason}
+            
             report = ValidationReport(
                 result=result_enum,
                 message=validation_result.get("message", ""),
-                details=validation_result.get("details"),
+                details=details,
                 provider=self._ai_provider.name,
                 model=getattr(self._ai_provider, 'model', None),
                 rules_used=rules,
@@ -212,24 +220,24 @@ class AIResponse:
                 raw_ai_response=validation_result.get("raw")
             )
             
-            # Сохраняем в историю
+            # Save to history
             self._validation_history.append(report)
             
-            # Прикрепляем к Allure отчету
+            # Attach to Allure report
             self._attach_to_allure(request_data, response_data, report, rules, ai_rules)
             
-            # Проверяем expected_success если задан
+            # Check expected_success if specified
             if expected_success is not None:
                 if expected_success and report.result != ValidationResult.SUCCESS:
-                    # Позитивный тест, но валидация не прошла (failed или error)
+                    # Positive test but validation failed
                     error_details = self._format_validation_error(report)
                     raise AssertionError(f"❌ Positive test failed AI validation: {report.message}\n{error_details}")
                 
                 if not expected_success and report.result == ValidationResult.SUCCESS:
-                    # Негативный тест, но валидация прошла
+                    # Negative test but validation passed
                     raise AssertionError(f"❌ Negative test unexpectedly passed AI validation: {report.message}")
             
-            # Проверяем fail_on_error если задан
+            # Check fail_on_error if specified
             if fail_on_error and report.result != ValidationResult.SUCCESS:
                 error_details = self._format_validation_error(report)
                 raise AssertionError(f"❌ AI validation failed: {report.message}\n{error_details}")
@@ -237,7 +245,7 @@ class AIResponse:
             return report
             
         except AssertionError:
-            # Пробрасываем AssertionError дальше (это ожидаемое поведение)
+            # Re-raise AssertionError (expected behavior)
             raise
         except Exception as e:
             logger.error(f"AI validation error: {e}")
@@ -345,11 +353,11 @@ class AIResponse:
         
         # Информация о провайдере
         if report.provider and report.model:
-            lines.append(f"\n🔧 AI ПРОВАЙДЕР: {report.provider} ({report.model})")
+            lines.append(f"\n🔧 AI PROVIDER: {report.provider} ({report.model})")
         
         # Правила валидации
         if report.rules_used:
-            lines.append("\n📋 ПРАВИЛА ВАЛИДАЦИИ:")
+            lines.append("\n📋 VALIDATION RULES:")
             for i, rule in enumerate(report.rules_used, 1):
                 lines.append(f"   {i}. {rule}")
         
@@ -371,32 +379,32 @@ class AIResponse:
         return False
     
     def _format_graphql_style_error(self, report: ValidationReport) -> str:
-        """Форматирует ошибку в стиле GraphQL с категориями как строки"""
-        error_dict = {}
+        """Format error in simple reason-based style"""
+        if not report.details:
+            return "No details available"
         
-        # Категории для проверки (только основные)
+        # Новый простой формат - только reason
+        if "reason" in report.details:
+            return report.details["reason"]
+        
+        # Fallback для старого формата - выбираем самую важную проблему
         categories = [
-            ("http_compliance", "http_compliance"),
-            ("request_validation", "request_validation"),
-            ("response_structure", "response_structure"),
-            ("schema_compliance", "schema_compliance"),
-            ("data_consistency", "data_consistency")
+            ("schema_compliance", "Schema compliance"),
+            ("data_consistency", "Data consistency"), 
+            ("http_compliance", "HTTP compliance"),
+            ("request_validation", "Request validation"),
+            ("response_structure", "Response structure")
         ]
         
-        for key, dict_key in categories:
+        for key, name in categories:
             if key in report.details:
                 category_data = report.details[key]
-                
-                if isinstance(category_data, str):
-                    # Добавляем только проблемные категории или при общем failed
-                    if any(word in category_data.lower() for word in [
-                        "failed", "ошибка", "отсутствует", "некорректн", "неверн", 
-                        "нарушен", "не соответствует", "проблем", "неправильн"
-                    ]) or report.result.value == "failed":
-                        error_dict[dict_key] = category_data
+                if isinstance(category_data, str) and any(word in category_data.lower() for word in [
+                    "failed", "missing", "incorrect", "invalid", "mismatch", "error"
+                ]):
+                    return f"{name} failed: {category_data}"
         
-        # Возвращаем строковое представление словаря
-        return str(error_dict)
+        return "Validation issues found"
     
     def _attach_to_allure(
         self, 
@@ -440,17 +448,17 @@ class AIResponse:
             "error": "🚨"
         }.get(report.result.value, "❓")
         
-        lines.append(f"{result_emoji} РЕЗУЛЬТАТ: {report.result.value.upper()}")
-        lines.append(f"💬 СООБЩЕНИЕ: {report.message}")
+        lines.append(f"{result_emoji} RESULT: {report.result.value.upper()}")
+        lines.append(f"💬 MESSAGE: {report.message}")
         
         if report.provider:
-            lines.append(f"🔧 ПРОВАЙДЕР: {report.provider}")
+            lines.append(f"🔧 PROVIDER: {report.provider}")
         if report.model:
-            lines.append(f"🧠 МОДЕЛЬ: {report.model}")
+            lines.append(f"🧠 MODEL: {report.model}")
         
-        # Детальная разбивка
+        # Detailed breakdown
         if report.details:
-            lines.append("\n📊 ДЕТАЛЬНАЯ РАЗБИВКА:")
+            lines.append("\n📊 DETAILED BREAKDOWN:")
             
             categories = [
                 ("http_compliance", "HTTP Protocol Compliance"),
