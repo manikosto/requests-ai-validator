@@ -9,6 +9,9 @@
 
 `requests-ai-validator` is a drop-in replacement for the popular `requests` library that adds **AI-powered validation** capabilities to your REST API tests. It uses Large Language Models (LLMs) to intelligently validate API responses, request-response consistency, and business logic.
 
+<img width="879" height="900" alt="Xnip Helper 2025-08-22 4 42 00 PM" src="https://github.com/user-attachments/assets/564866a2-f15b-4dc5-98a6-866e0cca935f" />
+
+
 ## ✨ Key Features
 
 - 🔄 **Drop-in replacement** for `requests` - change only the import statement
