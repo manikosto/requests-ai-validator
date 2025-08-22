@@ -153,12 +153,12 @@ class AISession(requests.Session):
         self.default_ai_rules = ai_rules
     
     def enable_auto_validation(self, enable: bool = True):
-        """Включение автоматической валидации всех ответов"""
+        """Enable automatic validation of all responses"""
         self.auto_validate = enable
     
-    @allure.step("HTTP {method} {url}")
+    # Remove HTTP step to avoid nested structure in Allure
     def request(self, method, url, 
-                # AI параметры встроены в request
+                # AI parameters embedded in request
                 ai_validation=False, 
                 ai_schema=None, 
                 ai_rules=None, 
