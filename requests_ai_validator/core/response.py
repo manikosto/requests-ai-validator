@@ -456,44 +456,47 @@ class AIResponse:
         if report.model:
             lines.append(f"🧠 MODEL: {report.model}")
         
-        # Detailed breakdown
+        # Show reason for failed validations
         if report.details:
-            lines.append("\n📊 DETAILED BREAKDOWN:")
-            
-            categories = [
-                ("http_compliance", "HTTP Protocol Compliance"),
-                ("request_validation", "Request Validation"),
-                ("response_structure", "Response Structure"),
-                ("schema_compliance", "Schema Compliance"),
-                ("data_consistency", "Data Consistency"),
-                ("business_rules", "Business Rules"),
-                ("security", "Security & Best Practices"),
-                ("performance", "Performance & Efficiency")
-            ]
-            
-            for key, name in categories:
-                if key in report.details:
-                    category_data = report.details[key]
+            # New simple format with reason
+            if "reason" in report.details:
+                lines.append("\n🔍 FAILURE REASON:")
+                lines.append(f"   {report.details['reason']}")
+            else:
+                # Fallback for old format
+                lines.append("\n📊 DETAILED BREAKDOWN:")
+                
+                categories = [
+                    ("http_compliance", "HTTP Protocol Compliance"),
+                    ("request_validation", "Request Validation"),
+                    ("response_structure", "Response Structure"),
+                    ("schema_compliance", "Schema Compliance"),
+                    ("data_consistency", "Data Consistency")
+                ]
+                
+                for key, name in categories:
+                    if key in report.details:
+                        category_data = report.details[key]
                     
-                    if isinstance(category_data, str):
-                        status = category_data
-                        explanation = None
-                        checks = None
-                    else:
-                        status = category_data.get("status", "unknown")
-                        explanation = category_data.get("explanation")
-                        checks = category_data.get("checks")
-                    
-                    emoji = "✅" if status == "passed" else "❌" if status == "failed" else "⏭️"
-                    lines.append(f"   {emoji} {name}: {status}")
-                    
-                    if explanation:
-                        lines.append(f"      💭 {explanation}")
-                    
-                    if checks:
-                        lines.append(f"      🔍 Проверки:")
-                        for check in checks:
-                            lines.append(f"         • {check}")
+                        if isinstance(category_data, str):
+                            status = category_data
+                            explanation = None
+                            checks = None
+                        else:
+                            status = category_data.get("status", "unknown")
+                            explanation = category_data.get("explanation")
+                            checks = category_data.get("checks")
+                        
+                        emoji = "✅" if status == "passed" else "❌" if status == "failed" else "⏭️"
+                        lines.append(f"   {emoji} {name}: {status}")
+                        
+                        if explanation:
+                            lines.append(f"      💭 {explanation}")
+                        
+                        if checks:
+                            lines.append(f"      🔍 Checks:")
+                            for check in checks:
+                                lines.append(f"         • {check}")
             
             # Проблемы
             if report.details.get("issues"):
