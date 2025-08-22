@@ -264,10 +264,19 @@ Analyze this API interaction."""
             else:
                 result = "error"
             
+            # Prepare details - include reason if present
+            details = data.get("details", {})
+            reason = data.get("reason")
+            
+            # If reason exists at top level, add it to details
+            if reason:
+                details["reason"] = reason
+            
             return {
                 "result": result,
                 "message": data.get("message", ""),
-                "details": data.get("details", {}),
+                "details": details,
+                "reason": reason,  # Also include at top level
                 "raw": ai_response
             }
             

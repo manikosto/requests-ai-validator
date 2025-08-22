@@ -205,8 +205,12 @@ class AIResponse:
             details = validation_result.get("details")
             reason = validation_result.get("reason")
             
-            # If reason exists, use it as main details
+            # If reason exists at top level, use it
             if reason:
+                details = {"reason": reason}
+            # If reason exists inside details, extract it
+            elif details and isinstance(details, dict) and "reason" in details:
+                reason = details["reason"]
                 details = {"reason": reason}
             
             report = ValidationReport(
