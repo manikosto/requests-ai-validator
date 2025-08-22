@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "requests-ai-validator"
-version = "1.0.3"
+version = "1.0.4"
 description = "AI-powered validation wrapper for Python requests library"
 readme = "README.md"
 license = {text = "MIT"}
