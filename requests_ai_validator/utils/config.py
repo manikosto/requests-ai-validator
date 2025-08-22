@@ -60,12 +60,12 @@ def configure(
 
 
 def get_config() -> Dict[str, Any]:
-    """Получение текущей конфигурации"""
+    """Get current configuration"""
     return _global_config.copy()
 
 
 def reset_config():
-    """Сброс конфигурации к значениям по умолчанию"""
+    """Reset configuration to default values"""
     global _global_config
     _global_config = {
         "default_ai_provider": "openai",
@@ -80,7 +80,7 @@ def reset_config():
 
 
 def load_config_from_env():
-    """Загрузка конфигурации из переменных окружения"""
+    """Load configuration from environment variables"""
     env_mapping = {
         "REQUESTS_AI_PROVIDER": "default_ai_provider",
         "REQUESTS_AI_MODEL": "default_model", 

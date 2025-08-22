@@ -7,7 +7,7 @@ from typing import Dict, Any, Optional, List
 
 
 class BaseSchema(ABC):
-    """Базовый класс для всех схем валидации"""
+    """Base class for all validation schemas"""
     
     @abstractmethod
     def validate_structure(self, data: Dict[str, Any]) -> Optional[List[str]]:

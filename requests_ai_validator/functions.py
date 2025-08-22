@@ -322,7 +322,7 @@ def get_and_validate(
     expected_success=True,
     **kwargs
 ) -> AIResponse:
-    """GET запрос с немедленной AI валидацией"""
+    """GET request with immediate AI validation"""
     session = get_global_session()
     response = session.get(url, **kwargs)
     if session.ai_provider:
@@ -345,7 +345,7 @@ def post_and_validate(
     expected_success=True,
     **kwargs
 ) -> AIResponse:
-    """POST запрос с немедленной AI валидацией"""
+    """POST request with immediate AI validation"""
     session = get_global_session()
     response = session.post(url, data=data, json=json, **kwargs)
     if session.ai_provider:
@@ -368,7 +368,7 @@ def put_and_validate(
     expected_success=True,
     **kwargs
 ) -> AIResponse:
-    """PUT запрос с немедленной AI валидацией"""
+    """PUT request with immediate AI validation"""
     session = get_global_session()
     response = session.put(url, data=data, json=json, **kwargs)
     if session.ai_provider:
@@ -389,7 +389,7 @@ def delete_and_validate(
     expected_success=True,
     **kwargs
 ) -> AIResponse:
-    """DELETE запрос с немедленной AI валидацией"""
+    """DELETE request with immediate AI validation"""
     session = get_global_session()
     response = session.delete(url, **kwargs)
     if session.ai_provider:

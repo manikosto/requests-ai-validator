@@ -39,7 +39,7 @@ class AISession(requests.Session):
     Использование:
         session = AISession(ai_provider="openai", api_key="your-key")
         response = session.get("https://api.example.com/users")
-        validation = response.validate_with_ai(schema=UserSchema, rules=["ID должен быть положительным"])
+        validation = response.validate_with_ai(schema=UserSchema, rules=["ID must be positive"])
     """
     
     def __init__(
@@ -127,7 +127,7 @@ class AISession(requests.Session):
         api_key: Optional[str] = None,
         model: Optional[str] = None
     ):
-        """Настройка AI провайдера после создания сессии"""
+        """Configure AI provider after session creation"""
         if isinstance(provider, str):
             from ..providers.factory import create_ai_provider
             self.ai_provider = create_ai_provider(provider, api_key=api_key, model=model)
@@ -135,7 +135,7 @@ class AISession(requests.Session):
             self.ai_provider = provider
     
     def set_default_schema(self, schema):
-        """Установка схемы по умолчанию для всех запросов"""
+        """Set default schema for all requests"""
         from ..schemas.base import BaseSchema
         from ..schemas.factory import create_schema
         
@@ -145,11 +145,11 @@ class AISession(requests.Session):
             self.validation_schema = create_schema(schema)
     
     def set_default_rules(self, rules: List[str]):
-        """Установка правил валидации по умолчанию"""
+        """Set default validation rules"""
         self.default_validation_rules = rules
     
     def set_default_ai_rules(self, ai_rules: List[str]):
-        """Установка AI инструкций по умолчанию"""
+        """Set default AI instructions"""
         self.default_ai_rules = ai_rules
     
     def enable_auto_validation(self, enable: bool = True):
@@ -227,7 +227,7 @@ class AISession(requests.Session):
         return ai_response
     
     def get_validation_stats(self) -> Dict[str, Any]:
-        """Получение статистики валидации"""
+        """Get validation statistics"""
         stats = self._validation_stats.copy()
         if stats["validated_requests"] > 0:
             stats["validation_success_rate"] = (
@@ -238,7 +238,7 @@ class AISession(requests.Session):
         return stats
     
     def reset_stats(self):
-        """Сброс статистики"""
+        """Reset statistics"""
         self._validation_stats = {
             "total_requests": 0,
             "validated_requests": 0,

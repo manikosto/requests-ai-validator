@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 
 
 class ValidationResult(str, Enum):
-    """Результат AI валидации"""
+    """AI validation result"""
     SUCCESS = "success"
     FAILED = "failed"
     ERROR = "error"
@@ -50,7 +50,7 @@ class ValidationResult(str, Enum):
 
 @dataclass
 class ValidationReport:
-    """Отчет о валидации"""
+    """Validation report"""
     result: ValidationResult
     message: str
     details: Optional[Dict[str, Any]] = None
@@ -292,11 +292,11 @@ class AIResponse:
             raise AssertionError("❌ AI unexpectedly reported SUCCESS in negative test-case")
     
     def _format_validation_error(self, report: ValidationReport) -> str:
-        """Форматирует детальное сообщение об ошибке валидации"""
+        """Formats detailed validation error message"""
         lines = []
         
         if report.details:
-            lines.append("📊 ДЕТАЛЬНАЯ РАЗБИВКА:")
+            lines.append("📊 DETAILED BREAKDOWN:")
             
             categories = [
                 ("http_compliance", "HTTP Protocol"),
@@ -309,7 +309,7 @@ class AIResponse:
                 ("performance", "Performance")
             ]
             
-            # Показываем ТОЛЬКО failed категории
+            # Show ONLY failed categories
             failed_found = False
             for key, name in categories:
                 if key in report.details:
@@ -325,33 +325,33 @@ class AIResponse:
                         explanation = category_data.get("explanation")
                         checks = category_data.get("checks")
                     
-                    # Показываем только failed категории
+                    # Show only failed categories
                     if status == "failed":
                         failed_found = True
                         lines.append(f"   ❌ {name}: {status}")
                         
-                        # Добавляем объяснение если есть
+                        # Add explanation if available
                         if explanation:
                             lines.append(f"      💭 {explanation}")
                         
-                        # Добавляем проверки если есть
+                        # Add checks if available
                         if checks:
-                            lines.append(f"      🔍 Проверки:")
+                            lines.append(f"      🔍 Checks:")
                             for check in checks:
                                 lines.append(f"         • {check}")
             
             if not failed_found:
-                lines.append("   (Нет конкретных failed категорий)")
+                lines.append("   (No specific failed categories)")
             
-            # Конкретные проблемы
+            # Specific issues
             if report.details.get("issues"):
-                lines.append("\n🚨 НАЙДЕННЫЕ ПРОБЛЕМЫ:")
+                lines.append("\n🚨 ISSUES FOUND:")
                 for i, issue in enumerate(report.details["issues"], 1):
                     lines.append(f"   {i}. {issue}")
             
             # Рекомендации
             if report.details.get("recommendations"):
-                lines.append("\n💡 РЕКОМЕНДАЦИИ:")
+                lines.append("\n💡 RECOMMENDATIONS:")
                 for i, rec in enumerate(report.details["recommendations"], 1):
                     lines.append(f"   {i}. {rec}")
         
@@ -372,7 +372,7 @@ class AIResponse:
         return "\n".join(lines)
     
     def _should_use_graphql_format(self, report: ValidationReport) -> bool:
-        """Проверяет нужно ли использовать GraphQL-стиль формат"""
+        """Checks if GraphQL-style format should be used"""
         if not report.details:
             return False
         
@@ -418,7 +418,7 @@ class AIResponse:
         rules: Optional[List[str]] = None,
         ai_rules: Optional[List[str]] = None
     ):
-        """Прикрепляет только AI Raw и Detailed к Allure отчету"""
+        """Attaches only AI Raw and Detailed to Allure report"""
         if not ALLURE_AVAILABLE:
             return
         
@@ -439,7 +439,7 @@ class AIResponse:
         )
     
     def _format_detailed_feedback_for_allure(self, report: ValidationReport) -> str:
-        """Форматирует детальный фидбек для Allure отчета"""
+        """Formats detailed feedback for Allure report"""
         lines = []
         
         lines.append("🤖 DETAILED AI FEEDBACK")
@@ -504,13 +504,13 @@ class AIResponse:
             
             # Проблемы
             if report.details.get("issues"):
-                lines.append("\n🚨 НАЙДЕННЫЕ ПРОБЛЕМЫ:")
+                lines.append("\n🚨 ISSUES FOUND:")
                 for i, issue in enumerate(report.details["issues"], 1):
                     lines.append(f"   {i}. {issue}")
             
             # Рекомендации
             if report.details.get("recommendations"):
-                lines.append("\n💡 РЕКОМЕНДАЦИИ:")
+                lines.append("\n💡 RECOMMENDATIONS:")
                 for i, rec in enumerate(report.details["recommendations"], 1):
                     lines.append(f"   {i}. {rec}")
         
@@ -524,11 +524,11 @@ class AIResponse:
         return "\n".join(lines)
     
     def get_validation_history(self) -> List[ValidationReport]:
-        """Получение истории валидаций для этого ответа"""
+        """Get validation history for this response"""
         return self._validation_history.copy()
     
     def last_validation(self) -> Optional[ValidationReport]:
-        """Получение последней валидации"""
+        """Get last validation"""
         return self._validation_history[-1] if self._validation_history else None
     
     def print_validation_details(self, validation: Optional[ValidationReport] = None):
@@ -542,7 +542,7 @@ class AIResponse:
             validation = self.last_validation()
         
         if not validation:
-            print("❌ Нет данных валидации")
+            print("❌ No validation data")
             return
         
         import json
@@ -616,13 +616,13 @@ class AIResponse:
             
             # Проблемы
             if validation.details.get("issues"):
-                print(f"\n🚨 НАЙДЕННЫЕ ПРОБЛЕМЫ:")
+                print(f"\n🚨 ISSUES FOUND:")
                 for i, issue in enumerate(validation.details["issues"], 1):
                     print(f"   {i}. {issue}")
             
             # Рекомендации
             if validation.details.get("recommendations"):
-                print(f"\n💡 РЕКОМЕНДАЦИИ:")
+                print(f"\n💡 RECOMMENDATIONS:")
                 for i, rec in enumerate(validation.details["recommendations"], 1):
                     print(f"   {i}. {rec}")
         
@@ -653,7 +653,7 @@ class AIResponse:
         return getattr(self._response, name)
     
     def __setattr__(self, name, value):
-        """Проксирование установки атрибутов"""
+        """Proxy attribute setting"""
         # AI-специфичные атрибуты сохраняем в AIResponse
         if name.startswith('_') or name in [
             'validate_with_ai', 'assert_valid', 'get_validation_history', 
@@ -665,7 +665,7 @@ class AIResponse:
             setattr(self._response, name, value)
     
     def __dir__(self):
-        """Показываем все доступные методы и свойства"""
+        """Show all available methods and properties"""
         ai_methods = [
             'validate_with_ai', 'assert_valid', 'get_validation_history', 
             'last_validation', 'json_data', 'is_success', 'is_json'
@@ -701,7 +701,7 @@ class AIResponse:
     # Основные свойства для удобства
     @property
     def json_data(self):
-        """Удобный доступ к JSON данным"""
+        """Convenient access to JSON data"""
         try:
             return self._response.json()
         except:
@@ -709,7 +709,7 @@ class AIResponse:
     
     @property
     def is_success(self):
-        """Проверка успешности запроса"""
+        """Check if request was successful"""
         return 200 <= self._response.status_code < 300
     
     @property

@@ -11,7 +11,7 @@ from .base import BaseAIProvider
 
 
 class AnthropicProvider(BaseAIProvider):
-    """Провайдер для Anthropic Claude моделей"""
+    """Provider for Anthropic Claude models"""
     
     def __init__(
         self,
@@ -30,7 +30,7 @@ class AnthropicProvider(BaseAIProvider):
         if not self.api_key:
             raise ValueError(
                 "Anthropic API ключ не найден. "
-                "Установите переменную AI_TOKEN или передайте api_key параметр"
+                "Set AI_TOKEN environment variable or pass api_key parameter"""
             )
     
     def _make_request(self, messages: List[Dict[str, str]]) -> str:

@@ -67,15 +67,15 @@ def create_ai_provider(
 
 # Удобные функции для создания конкретных провайдеров
 def openai_provider(api_key: Optional[str] = None, model: str = "gpt-4o", **kwargs) -> OpenAIProvider:
-    """Создание OpenAI провайдера"""
+    """Create OpenAI provider"""
     return OpenAIProvider(api_key=api_key, model=model, **kwargs)
 
 
 def anthropic_provider(api_key: Optional[str] = None, model: str = "claude-3-sonnet-20240229", **kwargs) -> AnthropicProvider:
-    """Создание Anthropic провайдера"""
+    """Create Anthropic provider"""
     return AnthropicProvider(api_key=api_key, model=model, **kwargs)
 
 
 def ollama_provider(model: str = "llama3.1", base_url: str = "http://localhost:11434", **kwargs) -> OllamaProvider:
-    """Создание Ollama провайдера"""
+    """Create Ollama provider"""
     return OllamaProvider(model=model, base_url=base_url, **kwargs)

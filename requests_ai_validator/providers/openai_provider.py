@@ -12,7 +12,7 @@ from .base import BaseAIProvider
 load_dotenv()
 
 class OpenAIProvider(BaseAIProvider):
-    """Провайдер для OpenAI GPT моделей"""
+    """Provider for OpenAI GPT models"""
     
     def __init__(
         self,
@@ -35,7 +35,7 @@ class OpenAIProvider(BaseAIProvider):
         if not self.api_key:
             raise ValueError(
                 "OpenAI API ключ не найден. "
-                "Установите переменную AI_TOKEN или передайте api_key параметр"
+                "Set AI_TOKEN environment variable or pass api_key parameter"
             )
     
     def _make_request(self, messages: List[Dict[str, str]]) -> str:
@@ -105,7 +105,7 @@ class OpenAIProvider(BaseAIProvider):
         return data["choices"][0]["message"]["content"].strip()
     
     def _configure_model_params(self, payload: dict):
-        """Простая настройка параметров для всех GPT моделей"""
+        """Simple parameter configuration for all GPT models"""
         # Используем стандартные параметры для всех моделей
         payload["max_tokens"] = self.max_tokens
         payload["temperature"] = self.temperature

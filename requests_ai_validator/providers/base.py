@@ -1,5 +1,5 @@
 """
-Базовый класс для AI провайдеров
+Base class for AI providers
 """
 
 from abc import ABC, abstractmethod
@@ -20,13 +20,13 @@ class BaseAIProvider(ABC):
     @abstractmethod
     def _make_request(self, messages: List[Dict[str, str]]) -> str:
         """
-        Отправка запроса к AI модели
+        Send request to AI model
         
         Args:
-            messages: Список сообщений для AI
+            messages: List of messages for AI
             
         Returns:
-            str: Ответ от AI модели
+            str: Response from AI model
         """
         pass
     
@@ -39,34 +39,34 @@ class BaseAIProvider(ABC):
         ai_rules: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         """
-        Валидация API взаимодействия
+        API interaction validation
         
         Args:
-            request_data: Данные запроса
-            response_data: Данные ответа
-            schema: Схема для валидации
-            rules: Дополнительные правила
+            request_data: Request data
+            response_data: Response data
+            schema: Schema for validation
+            rules: Additional rules
             
         Returns:
-            Dict[str, Any]: Результат валидации
+            Dict[str, Any]: Validation result
         """
         try:
-            # Подготовка сообщений для AI
+            # Prepare messages for AI
             messages = self._build_validation_messages(
                 request_data, response_data, schema, rules, ai_rules
             )
             
-            # Запрос к AI
+            # Request to AI
             ai_response = self._make_request(messages)
             
-            # Парсинг ответа
+            # Parse response
             return self._parse_ai_response(ai_response)
             
         except Exception as e:
-            logger.error(f"Ошибка валидации через {self.name}: {e}")
+            logger.error(f"Validation error via {self.name}: {e}")
             return {
                 "result": "error",
-                "message": f"Ошибка провайдера {self.name}: {str(e)}",
+                "message": f"Provider {self.name} error: {str(e)}",
                 "details": {"exception": str(e)},
                 "raw": None
             }
@@ -236,11 +236,11 @@ Analyze this API interaction."""
         ]
     
     def _parse_ai_response(self, ai_response: str) -> Dict[str, Any]:
-        """Парсинг ответа AI"""
+        """Parse AI response"""
         import json
         
         try:
-            # Очистка ответа от лишнего текста
+            # Clean response from extra text
             response_text = ai_response.strip()
             
             if response_text.startswith("```json"):
@@ -255,7 +255,7 @@ Analyze this API interaction."""
             
             data = json.loads(response_text)
             
-            # Нормализация результата
+            # Normalize result
             result = data.get("result", "").lower()
             if result in {"success", "passed", "valid", "ok"}:
                 result = "success"
@@ -281,10 +281,10 @@ Analyze this API interaction."""
             }
             
         except Exception as e:
-            logger.error(f"Ошибка парсинга AI ответа: {e}")
+            logger.error(f"AI response parsing error: {e}")
             return {
                 "result": "error",
-                "message": f"Ошибка парсинга: {str(e)}",
+                "message": f"Parsing error: {str(e)}",
                 "details": {"parse_error": str(e)},
                 "raw": ai_response
             }

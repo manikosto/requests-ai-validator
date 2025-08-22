@@ -17,7 +17,7 @@ from .base import BaseSchema
 
 
 class PydanticSchema(BaseSchema):
-    """Схема на основе Pydantic модели"""
+    """Schema based on Pydantic model"""
     
     def __init__(self, model: Type[BaseModel]):
         if not PYDANTIC_AVAILABLE:
@@ -54,7 +54,7 @@ class PydanticSchema(BaseSchema):
         return "pydantic"
     
     def to_dict(self) -> Dict[str, Any]:
-        """Конвертация в словарь"""
+        """Convert to dictionary"""
         try:
             return self.model.model_json_schema()
         except Exception:

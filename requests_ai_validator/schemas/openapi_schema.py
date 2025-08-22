@@ -11,7 +11,7 @@ from .json_schema import JSONSchema
 
 
 class OpenAPISchema(BaseSchema):
-    """Схема на основе OpenAPI спецификации"""
+    """Schema based on OpenAPI specification"""
     
     def __init__(
         self, 
@@ -34,7 +34,7 @@ class OpenAPISchema(BaseSchema):
         self._response_schema = self._extract_response_schema()
     
     def _extract_response_schema(self) -> Optional[Dict[str, Any]]:
-        """Извлечение схемы ответа из OpenAPI спецификации"""
+        """Extract response schema from OpenAPI specification"""
         try:
             paths = self.spec.get("paths", {})
             path_item = paths.get(self.path, {})
@@ -59,7 +59,7 @@ class OpenAPISchema(BaseSchema):
     def validate_structure(self, data: Dict[str, Any]) -> Optional[List[str]]:
         """Структурная валидация через JSON Schema"""
         if not self._response_schema:
-            return ["Схема ответа не найдена в OpenAPI спецификации"]
+            return ["Response schema not found in OpenAPI specification"]
         
         # Используем JSON Schema валидацию
         json_schema = JSONSchema(self._response_schema)
@@ -70,7 +70,7 @@ class OpenAPISchema(BaseSchema):
         operation_info = self._get_operation_info()
         schema_info = (
             f"Response Schema:\n{json.dumps(self._response_schema, indent=2)}"
-            if self._response_schema else "Схема ответа не определена"
+            if self._response_schema else "Response schema not defined"
         )
         
         return f"""OpenAPI Operation:
@@ -82,7 +82,7 @@ Response Code: {self.response_code}
 {schema_info}"""
     
     def _get_operation_info(self) -> str:
-        """Получение информации об операции"""
+        """Get operation information"""
         try:
             paths = self.spec.get("paths", {})
             path_item = paths.get(self.path, {})
@@ -109,9 +109,9 @@ Response Code: {self.response_code}
                     params.append(param_info)
                 info_parts.append(f"Parameters: {', '.join(params)}")
             
-            return "\n".join(info_parts) if info_parts else "Информация об операции недоступна"
+            return "\n".join(info_parts) if info_parts else "Operation information not available"
         except Exception:
-            return "Ошибка получения информации об операции"
+            return "Error getting operation information"
     
     def get_schema_type(self) -> str:
         return "openapi"
@@ -133,7 +133,7 @@ Response Code: {self.response_code}
         method: str, 
         response_code: str = "200"
     ) -> 'OpenAPISchema':
-        """Загрузка OpenAPI схемы из файла"""
+        """Load OpenAPI schema from file"""
         file_path = Path(file_path)
         
         with open(file_path, 'r', encoding='utf-8') as f:
@@ -142,7 +142,7 @@ Response Code: {self.response_code}
                     import yaml
                     spec = yaml.safe_load(f)
                 except ImportError:
-                    raise ImportError("PyYAML не установлен для загрузки YAML файлов")
+                    raise ImportError("PyYAML not installed for loading YAML files")
             else:
                 spec = json.load(f)
         

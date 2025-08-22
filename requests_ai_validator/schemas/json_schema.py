@@ -20,7 +20,7 @@ class JSONSchema(BaseSchema):
     
     def __init__(self, schema: Dict[str, Any]):
         if not isinstance(schema, dict):
-            raise ValueError("JSON Schema должна быть словарем")
+            raise ValueError("JSON Schema must be a dictionary")
         
         self.schema = schema
     
@@ -49,7 +49,7 @@ class JSONSchema(BaseSchema):
     
     @classmethod
     def from_file(cls, file_path: str) -> 'JSONSchema':
-        """Загрузка схемы из файла"""
+        """Load schema from file"""
         path = Path(file_path)
         
         with open(path, 'r', encoding='utf-8') as f:
@@ -58,7 +58,7 @@ class JSONSchema(BaseSchema):
                     import yaml
                     schema = yaml.safe_load(f)
                 except ImportError:
-                    raise ImportError("PyYAML не установлен для загрузки YAML файлов")
+                    raise ImportError("PyYAML not installed for loading YAML files")
             else:
                 schema = json.load(f)
         

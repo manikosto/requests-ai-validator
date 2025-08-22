@@ -59,7 +59,7 @@ def create_schema(
     # Создание схемы по типу
     if schema_type == "pydantic":
         if not PYDANTIC_AVAILABLE:
-            raise ImportError("Pydantic не установлен")
+            raise ImportError("Pydantic not installed")
         return PydanticSchema(schema)
     
     elif schema_type == "json_schema":
@@ -68,7 +68,7 @@ def create_schema(
         elif isinstance(schema, str):
             return JSONSchema.from_file(schema) if Path(schema).exists() else JSONSchema.from_url(schema)
         else:
-            raise ValueError("Для JSON Schema ожидается dict или путь к файлу")
+            raise ValueError("JSON Schema expects dict or path to file")
     
     elif schema_type == "openapi":
         path = kwargs.get("path")
@@ -93,7 +93,7 @@ def create_schema(
 
 
 def _detect_schema_type(schema: Union[Dict, Type, str]) -> str:
-    """Автоопределение типа схемы"""
+    """Auto-detect schema type"""
     
     # Pydantic модель
     if PYDANTIC_AVAILABLE and isinstance(schema, type) and issubclass(schema, BaseModel):
@@ -127,7 +127,7 @@ def _detect_schema_type(schema: Union[Dict, Type, str]) -> str:
 
 # Удобные функции для создания конкретных типов схем
 def pydantic_schema(model: Type) -> PydanticSchema:
-    """Создание Pydantic схемы"""
+    """Create Pydantic schema"""
     return PydanticSchema(model)
 
 
@@ -145,7 +145,7 @@ def openapi_schema(
     method: str, 
     response_code: str = "200"
 ) -> OpenAPISchema:
-    """Создание OpenAPI схемы"""
+    """Create OpenAPI schema"""
     if isinstance(spec, dict):
         return OpenAPISchema(spec, path, method, response_code)
     elif spec.startswith(("http://", "https://")):
