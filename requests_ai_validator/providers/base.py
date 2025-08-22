@@ -108,15 +108,18 @@ Your task is to validate the following aspects of the REST API interaction:
    - Error responses must provide meaningful information without exposing sensitive details.
 
 4. ✅ **Schema Compliance** (if schema provided):
-   - **CRITICAL**: Validate response data against provided schema (Pydantic models, JSON Schema, OpenAPI specifications).
+   - **CRITICAL**: Validate response data against provided schema (Pydantic models, JSON Schema, OpenAPI).
    - **MANDATORY**: For Pydantic models, EVERY field defined in the model MUST be present in the response.
-   - **STRICT**: If any field from the schema is missing in response, mark as FAILED.
-   - **STRICT**: Check field types, constraints, and requirements defined in the schema.
-   - **IMPORTANT**: Ensure enum values are within allowed ranges.
-   - **STRICT**: Validate nested objects and arrays according to schema definitions.
-   - For Pydantic models: respect field validators and constraints.
-   - For JSON Schema: validate against type definitions, patterns, and constraints.
-   - For OpenAPI: validate against operation-specific response schemas.
+   - **ULTRA STRICT FIELD CHECKING**: 
+     * Missing field: Schema requires "nickname", response has no "nickname" key → FAILED
+     * Null value: Schema requires "avatar_url": str, response has "avatar_url": null → FAILED  
+     * Empty string: Schema requires "name": str, response has "name": "" → FAILED
+     * Wrong type: Schema requires "id": int, response has "id": "123" → FAILED
+   - **FIELD DETECTION EXAMPLES**:
+     * Response: {"id": 1, "name": "John"} + Schema needs "nickname" → "missing required field 'nickname'"
+     * Response: {"id": 1, "name": "", "nickname": null} → "empty field 'name', null field 'nickname'"
+     * Response: {"id": "123"} + Schema needs id: int → "field 'id' wrong type: expected int got string"
+   - **CHECK EVERY FIELD** in the schema against response - be extremely thorough
 
 5. ✅ **Data Consistency**:
    - **ONLY COMPARE**: Fields that exist in BOTH request payload AND response.

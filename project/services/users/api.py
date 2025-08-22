@@ -22,11 +22,12 @@ class UsersAPI:
             json=self.payloads.create_user(),
             headers=self.headers.basic,
             ai_validation=True,
-            ai_schema=UserResponseModel
+            ai_schema=UserResponseModel,
+            ai_expected_success=True
         )
-        return self.helper._validate_response(
-            response=response,
-            model=UserResponseModel,
-            success=True
-        )
+        # return self.helper._validate_response(
+        #     response=response,
+        #     model=UserResponseModel,
+        #     success=True
+        # )
 

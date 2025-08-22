@@ -51,8 +51,35 @@ class OpenAIProvider(BaseAIProvider):
             "messages": messages
         }
         
-        # response_format поддерживается только новыми моделями
-        if self._supports_json_format():
+        # Use structured outputs for better reliability
+        if self._supports_structured_outputs():
+            payload["response_format"] = {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": "validation_response",
+                    "strict": True,
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "result": {
+                                "type": "string",
+                                "enum": ["success", "failed", "error"]
+                            },
+                            "message": {
+                                "type": "string",
+                                "description": "Concise summary of validation"
+                            },
+                            "reason": {
+                                "type": "string",
+                                "description": "Specific reason for failure (only if result is failed)"
+                            }
+                        },
+                        "required": ["result", "message"],
+                        "additionalProperties": False
+                    }
+                }
+            }
+        elif self._supports_json_format():
             payload["response_format"] = {"type": "json_object"}
         
         # Умная логика для разных GPT моделей
@@ -83,9 +110,16 @@ class OpenAIProvider(BaseAIProvider):
         payload["max_tokens"] = self.max_tokens
         payload["temperature"] = self.temperature
     
-    def _supports_json_format(self) -> bool:
-        """Проверяет поддерживает ли модель response_format: json_object"""
+    def _supports_structured_outputs(self) -> bool:
+        """Check if model supports structured outputs (JSON Schema)"""
         model = self.model.lower()
         
-        # Простая проверка - только новые модели поддерживают JSON format
+        # Only specific models support structured outputs
+        return model.startswith('gpt-4o') or model in ['gpt-4o-mini', 'gpt-4o-2024-08-06']
+    
+    def _supports_json_format(self) -> bool:
+        """Check if model supports response_format: json_object"""
+        model = self.model.lower()
+        
+        # Simple check - only newer models support JSON format
         return any(x in model for x in ['turbo-1106', 'turbo-0125', 'gpt-4-turbo', 'gpt-4o', 'preview'])
