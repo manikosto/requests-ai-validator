@@ -86,16 +86,23 @@ class BaseAIProvider(ABC):
         if ai_rules:
             ai_override_section = f"""
 
-🚨 **CRITICAL OVERRIDE INSTRUCTIONS - HIGHEST PRIORITY:**
+🚨 **CUSTOM VALIDATION RULES - HIGHEST PRIORITY:**
 {chr(10).join(f"- {rule}" for rule in ai_rules)}
 
-**ABSOLUTE PRIORITY:** These instructions take precedence over ALL default validation logic below. 
-If any instruction conflicts with standard validation rules, follow the override instructions instead.
-Do NOT apply standard validation that contradicts these specific instructions.
+**⚡ PRIORITY OVERRIDE BEHAVIOR:**
+- These custom rules SUPPLEMENT and OVERRIDE the standard validation below
+- Apply standard validation EXCEPT where these custom rules specify otherwise
+- If custom rule conflicts with standard rule, the CUSTOM RULE WINS
+- Example: If rule says "200 or 201 is OK" → treat 200 as SUCCESS (not failure)
+- Example: If rule says "empty field is OK" → treat empty field as SUCCESS (not failure)
+- Custom rules take absolute precedence over conflicting standard validations
+- When custom rule applies, do NOT report it as validation failure
+
+**🎯 BALANCED APPROACH:** Use standard validation + custom rule overrides
 
 """
         
-        # Simple English prompt
+        # Balanced approach: AI rules as high-priority additions to standard validation
         system_prompt = """
 You are a strict but schema-aware REST API validator with deep expertise in HTTP protocols, data validation, and API design patterns.""" + ai_override_section + """
 
@@ -123,17 +130,21 @@ Your task is to validate the following aspects of the REST API interaction:
 
 4. ✅ **Schema Compliance** (if schema provided):
    - **CRITICAL**: Validate response data against provided schema (Pydantic models, JSON Schema, OpenAPI).
-   - **MANDATORY**: For Pydantic models, EVERY field defined in the model MUST be present in the response.
-   - **ULTRA STRICT FIELD CHECKING**: 
+   - **⚡ CUSTOM RULE OVERRIDE**: If custom rules specify field requirements, follow those instead of strict schema
+   - **STANDARD VALIDATION**: For Pydantic models, EVERY field defined in the model MUST be present in the response.
+   - **ULTRA STRICT FIELD CHECKING** (unless overridden by custom rules): 
      * Missing field: Schema requires "nickname", response has no "nickname" key → FAILED
      * Null value: Schema requires "avatar_url": str, response has "avatar_url": null → FAILED  
      * Empty string: Schema requires "name": str, response has "name": "" → FAILED
      * Wrong type: Schema requires "id": int, response has "id": "123" → FAILED
+   - **CUSTOM RULE EXAMPLES**:
+     * If rule says "avatar url should be empty" → empty avatar_url is SUCCESS, not failure
+     * If rule says "missing fields are OK" → don't fail on missing schema fields
    - **FIELD DETECTION EXAMPLES**:
      * Response: {"id": 1, "name": "John"} + Schema needs "nickname" → "missing required field 'nickname'"
      * Response: {"id": 1, "name": "", "nickname": null} → "empty field 'name', null field 'nickname'"
      * Response: {"id": "123"} + Schema needs id: int → "field 'id' wrong type: expected int got string"
-   - **CHECK EVERY FIELD** in the schema against response - be extremely thorough
+   - **CHECK EVERY FIELD** in the schema against response - be extremely thorough (unless custom rules override)
 
 5. ✅ **Data Consistency**:
    - **ONLY COMPARE**: Fields that exist in BOTH request payload AND response.

@@ -19,7 +19,7 @@ from .functions import (
     Session
 )
 
-__version__ = "1.0.5"
+__version__ = "1.0.6"
 __author__ = "Aleksei Koledachkin"
 __email__ = "akoledachkin@gmail.com"
 
