@@ -129,9 +129,9 @@ Your task is to validate the following aspects of the REST API interaction:
 
 1. ✅ **HTTP Protocol Compliance**:
    - The HTTP method must be appropriate for the operation (GET for retrieval, POST for creation, PUT for updates, DELETE for removal).
-   - Status codes must align with the operation outcome (200/201 for success, 400 for client errors, 500 for server errors).
    - Headers must be correctly formatted and semantically appropriate (Content-Type, Authorization, etc.).
    - URL structure should follow RESTful conventions.
+   - NOTE: Status codes are flexible - accept any 2xx as success unless custom rules specify otherwise.
 
 2. ✅ **Request Validation**:
    - **CRITICAL**: ONLY validate the actual payload that was sent in the request.
@@ -221,7 +221,7 @@ Your task is to validate the following aspects of the REST API interaction:
 **REASON FORMAT EXAMPLES**:
 - "Schema compliance failed: missing required fields 'nickname', 'avatar_url' in response"
 - "Data consistency failed: field 'email' value 'test@test.com' in request but 'user@example.com' in response"  
-- "HTTP compliance failed: status code 422 instead of expected 201 for POST operation"
+- "HTTP compliance failed: invalid Content-Type header for JSON response"
 - "Request validation failed: invalid data type for field 'age' - expected integer but got string"
 
 **LANGUAGE REQUIREMENT**: RESPOND ONLY IN ENGLISH"""
