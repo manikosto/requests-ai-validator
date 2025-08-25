@@ -81,150 +81,53 @@ class BaseAIProvider(ABC):
     ) -> List[Dict[str, str]]:
         """Build messages for AI validation"""
         
-        # Build system prompt with AI rules override if provided
-        ai_override_section = ""
-        if ai_rules:
-            ai_override_section = f"""
-
-🚨 **MANDATORY CUSTOM RULES - ABSOLUTE HIGHEST PRIORITY:**
-{chr(10).join(f"- {rule}" for rule in ai_rules)}
-
-**⚡ CRITICAL MANDATORY BEHAVIOR:**
-- These rules are MANDATORY and MUST BE FOLLOWED at ALL TIMES
-- If ANY custom rule contradicts the standard validation below, IGNORE the standard rule
-- NEVER report failure for anything that custom rules allow
-- Example: Rule "200 or 201 is OK" → 200 is SUCCESS, do NOT say "expected 201"
-- Example: Rule "empty field is OK" → empty field is SUCCESS, do NOT say "failed"
-- When custom rule allows something, it is AUTOMATICALLY valid regardless of standards
-
-**🛑 ABSOLUTE REQUIREMENT:**
-If custom rules exist, they OVERRIDE everything else. Follow them blindly!
-Do NOT apply conflicting standard validation when custom rules permit something.
-
-"""
+        # AI rules are now integrated directly into the simplified prompt
         
-        # Radical approach: Simple system prompt when AI rules exist
-        if ai_rules:
-            system_prompt = f"""
-You are a REST API validator that follows ONLY the custom rules provided.
+        # Simple and practical system prompt
+        system_prompt = """
+You are a REST API validator focused on practical validation.
 
-🚨 **CUSTOM RULES TO FOLLOW:**
-{chr(10).join(f"- {rule}" for rule in ai_rules)}
+🎯 **VALIDATION FOCUS:**
+1. **Request vs Response consistency** - check if sent data matches received data
+2. **Response vs Schema compliance** - validate response against provided schema (if any)  
+3. **Error status codes** - only flag 4xx and 5xx as problems (2xx and 3xx are fine)
+4. **Custom rules** - follow any additional rules provided by user
 
-**VALIDATION APPROACH:**
-- Check if the API response follows the custom rules above
-- If all custom rules are satisfied, return SUCCESS
-- Only report failure if custom rules are violated
-- Ignore standard REST/HTTP validation rules
-- Focus ONLY on what the custom rules specify
+🚨 **CUSTOM RULES OVERRIDE:**
+If custom rules are provided, they take HIGHEST PRIORITY and override standard validation.
+Custom rules are MANDATORY - follow them exactly even if they contradict standard validation.
 
-**IMPORTANT:** Be permissive - if custom rules don't mention something as a problem, then it's OK."""
-        else:
-            system_prompt = """
-You are a strict but schema-aware REST API validator with deep expertise in HTTP protocols, data validation, and API design patterns.
+**📋 VALIDATION CHECKS:**
 
-**🚨 CRITICAL INSTRUCTION: If custom rules are provided above, they are MANDATORY and override ALL standard validation rules below that conflict with them. Follow custom rules EXACTLY.**
+1. **Status Code Check:**
+   - 2xx, 3xx: SUCCESS (no issues)
+   - 4xx, 5xx: FAILED (report as error)
 
-Your task is to validate the following aspects of the REST API interaction:
+2. **Request-Response Consistency:**
+   - Compare fields that exist in BOTH request and response
+   - Example: Request {"name": "John"} + Response {"id": 1, "name": "John"} → check name matches
+   - Ignore fields that exist only in request OR only in response
 
-1. ✅ **HTTP Protocol Compliance**:
-   - The HTTP method must be appropriate for the operation (GET for retrieval, POST for creation, PUT for updates, DELETE for removal).
-   - Headers must be correctly formatted and semantically appropriate (Content-Type, Authorization, etc.).
-   - URL structure should follow RESTful conventions.
-   - NOTE: Status codes are flexible - accept any 2xx as success unless custom rules specify otherwise.
+3. **Schema Validation (if schema provided):**
+   - Check response against schema requirements
+   - Report missing required fields, wrong types, invalid values
+   - Skip if no schema provided
 
-2. ✅ **Request Validation**:
-   - **CRITICAL**: ONLY validate the actual payload that was sent in the request.
-   - **FORBIDDEN**: DO NOT invent, assume, or require fields that were not in the actual request.
-   - **ONLY CHECK**: Structure is valid JSON, data types are correct for fields that ARE present.
-   - **EXAMPLE**: If request contains {"name": "John", "email": "test@test.com"} - validate ONLY these 2 fields.
-   - **NEVER SAY**: "Request should contain field X" unless X was actually in the request.
-   - **CORRECT RESPONSE**: "Request contains valid data: name, email" (only list actual fields).
+4. **Custom Rules (if provided):**
+   - Follow custom rules EXACTLY
+   - If rule allows something → it's SUCCESS (don't report as failure)
+   - Custom rules override ALL standard validation
 
-3. ✅ **Response Structure**:
-   - Response format must match the expected structure for the endpoint.
-   - All required fields must be present in successful responses.
-   - Data types in response must be consistent and appropriate.
-   - Error responses must provide meaningful information without exposing sensitive details.
+**🛑 OUTPUT FORMAT:**
+```json
+{
+  "result": "success" | "failed" | "error",
+  "message": "<concise summary>",
+  "reason": "<specific failure reason, only if failed>"
+}
+```
 
-4. ✅ **Schema Compliance** (if schema provided):
-   - **CRITICAL**: Validate response data against provided schema (Pydantic models, JSON Schema, OpenAPI).
-   - **⚡ CUSTOM RULE OVERRIDE**: If custom rules specify field requirements, follow those instead of strict schema
-   - **STANDARD VALIDATION**: For Pydantic models, EVERY field defined in the model MUST be present in the response.
-   - **ULTRA STRICT FIELD CHECKING** (unless overridden by custom rules): 
-     * Missing field: Schema requires "nickname", response has no "nickname" key → FAILED
-     * Null value: Schema requires "avatar_url": str, response has "avatar_url": null → FAILED  
-     * Empty string: Schema requires "name": str, response has "name": "" → FAILED
-     * Wrong type: Schema requires "id": int, response has "id": "123" → FAILED
-   - **CUSTOM RULE EXAMPLES**:
-     * If rule says "avatar url should be empty" → empty avatar_url is SUCCESS, not failure
-     * If rule says "missing fields are OK" → don't fail on missing schema fields
-   - **FIELD DETECTION EXAMPLES**:
-     * Response: {"id": 1, "name": "John"} + Schema needs "nickname" → "missing required field 'nickname'"
-     * Response: {"id": 1, "name": "", "nickname": null} → "empty field 'name', null field 'nickname'"
-     * Response: {"id": "123"} + Schema needs id: int → "field 'id' wrong type: expected int got string"
-   - **CHECK EVERY FIELD** in the schema against response - be extremely thorough (unless custom rules override)
-
-5. ✅ **Data Consistency**:
-   - **ONLY COMPARE**: Fields that exist in BOTH request payload AND response.
-   - **EXAMPLE**: Request {"name": "John", "email": "test@test.com"}, Response {"id": 1, "name": "John", "created_at": "2024-01-01"}
-   - **CHECK**: name field matches between request and response
-   - **IGNORE**: email (not in response), id (not in request), created_at (not in request)
-   - **CORRECT RESPONSE**: "Common field 'name' matches between request and response"
-   - **WRONG RESPONSE**: "Email field missing in response" (email wasn't required to be in response)
-
-6. ✅ **Business Rule Compliance**:
-   - Only validate business rules if explicitly provided in the `<rules>` section.
-   - Do not infer or assume business constraints beyond what is explicitly stated.
-   - Focus on the specific rules provided by the user.
-
-7. ✅ **Security and Best Practices**:
-   - Check for potential sensitive data exposure in responses.
-   - Validate proper error handling (informative but not verbose).
-   - Ensure consistent API behavior patterns.
-   - Check for proper handling of authentication and authorization.
-
-8. ✅ **Performance and Efficiency**:
-   - Response times should be reasonable for the operation.
-   - Data payload sizes should be appropriate.
-   - Caching headers should be present where applicable.
-
-9. ⚠️ **Ignore Non-Critical Metadata**:
-   - Ignore server-specific headers that don't affect functionality.
-   - Case-insensitive matching for enum values is acceptable unless explicitly forbidden.
-   - Minor formatting differences in non-critical fields are acceptable.
-
-10. 🛑 **Output Format**:
-    - Return a single, strict JSON object with this exact structure:
-    ```json
-    {
-      "result": "success" | "failed" | "error",
-      "message": "<concise summary>",
-      "reason": "<specific reason for failure, only if result is failed>"
-    }
-    ```
-    
-    **For SUCCESS**: Only include result and message
-    **For FAILED**: Include specific reason with concrete issues
-    **Examples of good reasons**:
-    - "Schema compliance failed: missing required fields 'nickname', 'avatar_url' in response"
-    - "Data consistency failed: field 'email' mismatch between request and response"
-    - "HTTP compliance failed: status code 422 instead of expected 201 for POST"
-
-**CRITICAL REQUIREMENTS**:
-- Never include explanations, Markdown, code blocks, or any text outside the JSON object
-- Always respond in valid JSON format and English language
-- Be specific about field names and concrete issues
-- For successful validations: simple success message
-- For failed validations: specific reason with exact problem details
-
-**REASON FORMAT EXAMPLES**:
-- "Schema compliance failed: missing required fields 'nickname', 'avatar_url' in response"
-- "Data consistency failed: field 'email' value 'test@test.com' in request but 'user@example.com' in response"  
-- "HTTP compliance failed: invalid Content-Type header for JSON response"
-- "Request validation failed: invalid data type for field 'age' - expected integer but got string"
-
-**LANGUAGE REQUIREMENT**: RESPOND ONLY IN ENGLISH"""
+**LANGUAGE:** English only."""
         
         # Prepare schema information
         schema_info = ""
@@ -268,18 +171,14 @@ Your task is to validate the following aspects of the REST API interaction:
 **RESPONSE:**
 ```json  
 {json.dumps(response_data, indent=2, ensure_ascii=False)}
-```{request_analysis}{schema_info}{rules_info}
+```{request_analysis}{schema_info}{rules_info}""" + (f"""
 
-Analyze this API interaction.""" + (f"""
-
-🚨🚨🚨 **FINAL MANDATORY OVERRIDE INSTRUCTIONS - MUST FOLLOW:**
+🚨 **CUSTOM VALIDATION RULES (HIGHEST PRIORITY):**
 {chr(10).join(f"- {rule}" for rule in ai_rules)}
 
-**CRITICAL FINAL INSTRUCTION:**
-If any of the above rules contradict your analysis, CHANGE your analysis to match the rules.
-These rules are ABSOLUTE and MANDATORY. If they say something is OK, then it's SUCCESS.
-Do NOT report failures for things these rules explicitly allow.
-Your final answer MUST comply with these rules no matter what.""" if ai_rules else "")
+**IMPORTANT:** These custom rules override standard validation. If a rule allows something, it's SUCCESS.""" if ai_rules else "") + """
+
+Analyze this API interaction using the validation focus above."""
         
         return [
             {"role": "system", "content": system_prompt},
