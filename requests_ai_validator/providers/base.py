@@ -86,25 +86,44 @@ class BaseAIProvider(ABC):
         if ai_rules:
             ai_override_section = f"""
 
-🚨 **CUSTOM VALIDATION RULES - HIGHEST PRIORITY:**
+🚨 **MANDATORY CUSTOM RULES - ABSOLUTE HIGHEST PRIORITY:**
 {chr(10).join(f"- {rule}" for rule in ai_rules)}
 
-**⚡ PRIORITY OVERRIDE BEHAVIOR:**
-- These custom rules SUPPLEMENT and OVERRIDE the standard validation below
-- Apply standard validation EXCEPT where these custom rules specify otherwise
-- If custom rule conflicts with standard rule, the CUSTOM RULE WINS
-- Example: If rule says "200 or 201 is OK" → treat 200 as SUCCESS (not failure)
-- Example: If rule says "empty field is OK" → treat empty field as SUCCESS (not failure)
-- Custom rules take absolute precedence over conflicting standard validations
-- When custom rule applies, do NOT report it as validation failure
+**⚡ CRITICAL MANDATORY BEHAVIOR:**
+- These rules are MANDATORY and MUST BE FOLLOWED at ALL TIMES
+- If ANY custom rule contradicts the standard validation below, IGNORE the standard rule
+- NEVER report failure for anything that custom rules allow
+- Example: Rule "200 or 201 is OK" → 200 is SUCCESS, do NOT say "expected 201"
+- Example: Rule "empty field is OK" → empty field is SUCCESS, do NOT say "failed"
+- When custom rule allows something, it is AUTOMATICALLY valid regardless of standards
 
-**🎯 BALANCED APPROACH:** Use standard validation + custom rule overrides
+**🛑 ABSOLUTE REQUIREMENT:**
+If custom rules exist, they OVERRIDE everything else. Follow them blindly!
+Do NOT apply conflicting standard validation when custom rules permit something.
 
 """
         
-        # Balanced approach: AI rules as high-priority additions to standard validation
-        system_prompt = """
-You are a strict but schema-aware REST API validator with deep expertise in HTTP protocols, data validation, and API design patterns.""" + ai_override_section + """
+        # Radical approach: Simple system prompt when AI rules exist
+        if ai_rules:
+            system_prompt = f"""
+You are a REST API validator that follows ONLY the custom rules provided.
+
+🚨 **CUSTOM RULES TO FOLLOW:**
+{chr(10).join(f"- {rule}" for rule in ai_rules)}
+
+**VALIDATION APPROACH:**
+- Check if the API response follows the custom rules above
+- If all custom rules are satisfied, return SUCCESS
+- Only report failure if custom rules are violated
+- Ignore standard REST/HTTP validation rules
+- Focus ONLY on what the custom rules specify
+
+**IMPORTANT:** Be permissive - if custom rules don't mention something as a problem, then it's OK."""
+        else:
+            system_prompt = """
+You are a strict but schema-aware REST API validator with deep expertise in HTTP protocols, data validation, and API design patterns.
+
+**🚨 CRITICAL INSTRUCTION: If custom rules are provided above, they are MANDATORY and override ALL standard validation rules below that conflict with them. Follow custom rules EXACTLY.**
 
 Your task is to validate the following aspects of the REST API interaction:
 
@@ -240,17 +259,8 @@ Your task is to validate the following aspects of the REST API interaction:
 - For DELETE operations: check deletion confirmation
 - Find inconsistencies between what was sent and what was received"""
         
-        # Build user content with AI instructions first (highest priority)
-        priority_instructions = ""
-        if ai_rules:
-            priority_instructions = f"""🚨 **CRITICAL AI INSTRUCTIONS - HIGHEST PRIORITY:**
-{chr(10).join(f"- {rule}" for rule in ai_rules)}
-
-**MANDATORY:** These instructions override any default validation logic. Follow them strictly!
-
-"""
-
-        user_content = f"""{priority_instructions}**REQUEST:**
+        # Build user content 
+        user_content = f"""**REQUEST:**
 ```json
 {json.dumps(request_data, indent=2, ensure_ascii=False)}
 ```
@@ -260,7 +270,16 @@ Your task is to validate the following aspects of the REST API interaction:
 {json.dumps(response_data, indent=2, ensure_ascii=False)}
 ```{request_analysis}{schema_info}{rules_info}
 
-Analyze this API interaction."""
+Analyze this API interaction.""" + (f"""
+
+🚨🚨🚨 **FINAL MANDATORY OVERRIDE INSTRUCTIONS - MUST FOLLOW:**
+{chr(10).join(f"- {rule}" for rule in ai_rules)}
+
+**CRITICAL FINAL INSTRUCTION:**
+If any of the above rules contradict your analysis, CHANGE your analysis to match the rules.
+These rules are ABSOLUTE and MANDATORY. If they say something is OK, then it's SUCCESS.
+Do NOT report failures for things these rules explicitly allow.
+Your final answer MUST comply with these rules no matter what.""" if ai_rules else "")
         
         return [
             {"role": "system", "content": system_prompt},
