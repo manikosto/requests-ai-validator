@@ -81,9 +81,23 @@ class BaseAIProvider(ABC):
     ) -> List[Dict[str, str]]:
         """Build messages for AI validation"""
         
+        # Build system prompt with AI rules override if provided
+        ai_override_section = ""
+        if ai_rules:
+            ai_override_section = f"""
+
+🚨 **CRITICAL OVERRIDE INSTRUCTIONS - HIGHEST PRIORITY:**
+{chr(10).join(f"- {rule}" for rule in ai_rules)}
+
+**ABSOLUTE PRIORITY:** These instructions take precedence over ALL default validation logic below. 
+If any instruction conflicts with standard validation rules, follow the override instructions instead.
+Do NOT apply standard validation that contradicts these specific instructions.
+
+"""
+        
         # Simple English prompt
         system_prompt = """
-You are a strict but schema-aware REST API validator with deep expertise in HTTP protocols, data validation, and API design patterns.
+You are a strict but schema-aware REST API validator with deep expertise in HTTP protocols, data validation, and API design patterns.""" + ai_override_section + """
 
 Your task is to validate the following aspects of the REST API interaction:
 
@@ -192,10 +206,7 @@ Your task is to validate the following aspects of the REST API interaction:
         if rules:
             rules_info = f"\n\n**BUSINESS RULES:**\n" + "\n".join(f"- {rule}" for rule in rules)
         
-        # Prepare AI instructions
-        ai_rules_info = ""
-        if ai_rules:
-            ai_rules_info = f"\n\n**AI INSTRUCTIONS:**\n" + "\n".join(f"- {rule}" for rule in ai_rules)
+        # AI instructions are now handled directly in user_content for higher priority
         
         # Special handling for request-response data comparison
         request_analysis = ""
@@ -218,7 +229,17 @@ Your task is to validate the following aspects of the REST API interaction:
 - For DELETE operations: check deletion confirmation
 - Find inconsistencies between what was sent and what was received"""
         
-        user_content = f"""**REQUEST:**
+        # Build user content with AI instructions first (highest priority)
+        priority_instructions = ""
+        if ai_rules:
+            priority_instructions = f"""🚨 **CRITICAL AI INSTRUCTIONS - HIGHEST PRIORITY:**
+{chr(10).join(f"- {rule}" for rule in ai_rules)}
+
+**MANDATORY:** These instructions override any default validation logic. Follow them strictly!
+
+"""
+
+        user_content = f"""{priority_instructions}**REQUEST:**
 ```json
 {json.dumps(request_data, indent=2, ensure_ascii=False)}
 ```
@@ -226,7 +247,7 @@ Your task is to validate the following aspects of the REST API interaction:
 **RESPONSE:**
 ```json  
 {json.dumps(response_data, indent=2, ensure_ascii=False)}
-```{request_analysis}{schema_info}{rules_info}{ai_rules_info}
+```{request_analysis}{schema_info}{rules_info}
 
 Analyze this API interaction."""
         
